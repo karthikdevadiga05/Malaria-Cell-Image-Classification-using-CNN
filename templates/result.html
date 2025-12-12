@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detection Results | Malaria Cell Detection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Font for consistency -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(120deg, #eaf6f0 0%, #f5f5f3 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            color: #23413b;
+        }
+        header {
+            width: 100%;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1px 20px;
+            background: #2c4c47;
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(44, 76, 71, 0.12);
+            position: sticky;
+            top: 9px;
+            z-index: 1000;
+            height: 70px;
+        }
+        .logo {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .nav-buttons {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.nav-buttons a {
+  text-decoration: none;
+  padding: 10px 22px;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 30px;
+  background: transparent;
+  border: 2px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-shadow: none;
+}
+
+.nav-buttons a:hover,
+.nav-buttons a:focus,
+.nav-buttons a.active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #fff;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+        .user-icon {
+            height: 36px;
+            border-radius: 50%;
+        }
+        .username {
+            font-weight: bold;
+            color: #fff;
+        }
+        main {
+            max-width: 700px;
+            margin: 60px auto 60px auto;
+            padding: 30px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+            backdrop-filter: blur(7px);
+            animation: fadeInCenter 0.8s cubic-bezier(.42,0,.58,1) 0.2s forwards;
+            opacity: 0;
+            transform: scale(0.97) translateY(32px);
+        }
+        @keyframes fadeInCenter {
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .result-section h2 {
+            text-align: center;
+            margin-top: 0;
+            font-size: 2rem;
+            color: #2c4c47;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .result-container {
+            display: flex;
+            gap: 36px;
+            align-items: flex-start;
+            margin-top: 36px;
+            background: rgba(255,255,255,0.98);
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(15, 144, 201, 0.09);
+            padding: 26px 18px;
+            animation: cardFadeInUp 0.8s cubic-bezier(.42,0,.58,1) 0.3s forwards;
+            opacity: 0;
+            transform: translateY(30px) scale(0.97);
+        }
+        @keyframes cardFadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .result-image img {
+            max-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(44, 76, 71, 0.10);
+            border: 3px solid #0f90c9;
+            background: #fff;
+        }
+        .result-details {
+            flex: 1;
+            min-width: 220px;
+        }
+        .status {
+            padding: 6px 18px;
+            border-radius: 16px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #fff;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .status.infected {
+            color: #fff;
+            background: #F44336;
+        }
+        .status.uninfected {
+            color: #fff;
+            background: #4CAF50;
+        }
+        .confidence-bar {
+            margin-bottom: 16px;
+        }
+        .confidence-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c4c47;
+            margin-bottom: 4px;
+        }
+        .progress-bar {
+            background: #eaf6f0;
+            border-radius: 8px;
+            height: 22px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 1px 5px rgba(15, 144, 201, 0.07);
+        }
+        .progress {
+            height: 100%;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            transition: width 0.7s cubic-bezier(.42,0,.58,1);
+        }
+        .interpretation {
+            margin: 18px 0;
+        }
+        .interpretation h4 {
+            margin-bottom: 6px;
+            color: #084f17;
+        }
+        .interpretation p {
+            margin: 0;
+            color: #23413b;
+        }
+        .back-btn, .download-btn {
+            display: inline-block;
+            background: #2c4c47;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.05rem;
+            margin-top: 18px;
+            box-shadow: 0 4px 20px rgba(15, 144, 201, 0.13);
+            transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .back-btn:hover, .download-btn:hover {
+            background: #063d0e;
+            box-shadow: 0 8px 32px rgba(15, 144, 201, 0.18);
+            transform: translateY(-2px) scale(1.04);
+            color: #fff;
+        }
+        .error-message {
+            background: rgba(244,67,54,0.12);
+            color: #F44336;
+            border-radius: 12px;
+            padding: 28px 18px;
+            text-align: center;
+            margin-top: 36px;
+            box-shadow: 0 4px 16px rgba(244,67,54,0.11);
+            animation: cardFadeInUp 0.8s cubic-bezier(.42,0,.58,1) 0.3s forwards;
+            opacity: 0;
+            transform: translateY(30px) scale(0.97);
+        }
+        .error-message h3 {
+            color: #F44336;
+            margin-bottom: 8px;
+        }
+        footer {
+            background: #2c4c47;
+            color: #fff;
+            text-align: center;
+            padding: 18px 0;
+            border-radius: 0 0 16px 16px;
+            margin-top: 40px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+        @media (max-width: 900px) {
+            main {
+                max-width: 99vw;
+                padding: 16px 2vw;
+            }
+            .result-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                padding: 18px 6px;
+            }
+        }
+        @media (max-width: 600px) {
+            main {
+                padding: 8px 1vw;
+            }
+            .result-image img {
+                max-width: 98vw;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <ul>
+                    <div class="nav-buttons">
+                        <li><a href="/" class="{% if request.path == '/' %}active{% endif %}"> Home</a></li>
+                        <li><a href="/about" class="{% if request.path == '/about' %}active{% endif %}">About</a></li>
+                        <li><a href="/contact" class="{% if request.path == '/contact' %}active{% endif %}">Contact</a></li>
+                        <li><a href="/reports" class="{% if request.path == '/reports' %}active{% endif %}">Reports</a></li>
+                        <li><a href="/diary" class="{% if request.path == '/diary/' %}active{% endif %}"> My Diary</a></li>
+                        <li><a href="{{ url_for('admin_analytics') }}">Analytics Dashboard</a></li>
+                    </div>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="result-section">
+            <h2>Detection Results</h2>
+
+            {% if result.error %}
+            <div class="error-message">
+                <h3>Error Occurred</h3>
+                <p>{{ result.error }}</p>
+                <a href="/" class="back-btn">Try Again</a>
+            </div>
+            {% else %}
+            <div class="result-container {% if result.is_infected %}infected{% else %}uninfected{% endif %}">
+                <div class="result-image">
+                    <img src="/{{ result.image_path }}" alt="Analyzed Image">
+                </div>
+                <div class="result-details">
+                    <h3>
+                        {% if result.is_infected %}
+                        <span class="status infected">Infected</span>
+                        {% else %}
+                        <span class="status uninfected">Uninfected</span>
+                        {% endif %}
+                    </h3>
+                    <div class="confidence-bar">
+                        <div class="confidence-label">
+                            Confidence: {{ (result.confidence * 100) | round(2) }}%
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress"
+                                style="width: {{ (result.confidence * 100) | round(2) }}%; background-color: {% if result.is_infected %}#F44336{% else %}#4CAF50{% endif %};">
+                                {{ (result.confidence * 100) | round(2) }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="interpretation">
+                        <h4>Interpretation:</h4>
+                        {% if result.is_infected %}
+                        <p>This blood smear image shows characteristics of malaria infection. The parasite is likely present in the red blood cells.</p>
+                        {% else %}
+                        <p>This blood smear image shows normal, healthy red blood cells without signs of malaria infection.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <a href="/" class="back-btn">Analyze Another Image</a>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Malaria Detection Project | MGM Evening College</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
