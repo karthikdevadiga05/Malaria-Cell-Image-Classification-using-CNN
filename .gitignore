@@ -49,8 +49,11 @@ config.py
 *.key
 
 # Large dataset files
-dataset/cell_images/
-dataset/processed/
+dataset/cell_images/*
+!dataset/cell_images/.gitkeep
+
+dataset/processed/*
+!dataset/processed/.gitkeep
 
 # Model files (large)
 *.h5
