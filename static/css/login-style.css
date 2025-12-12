@@ -1,0 +1,119 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body, html {
+    height: 100%;
+    background: linear-gradient(135deg, #0047AB, #1E90FF);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.background {
+    width: 100%;
+    height: 100%;
+    background: url('../images/abstract-blobs.svg') center/cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 30px 40px;
+    max-width: 350px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.login-container h3 {
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 10px;
+    margin: 10px 0;
+    background: rgba(255,255,255,0.3);
+    color: #fff;
+}
+
+input::placeholder {
+    color: #eee;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #fff;
+}
+
+.forgot {
+    text-decoration: none;
+    color: #fff;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: #fff;
+    color: #1E90FF;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.divider {
+    color: #ccc;
+    margin: 15px 0 10px;
+}
+
+.social-login {
+    display: flex;
+    justify-content: space-around;
+}
+
+.social-login button {
+    background: #fff;
+    color: #1E90FF;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    width: 40px;
+    cursor: pointer;
+}
+
+.signup-link {
+    margin-top: 20px;
+    color: #fff;
+    font-size: 13px;
+}
+.signup-link a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+}
