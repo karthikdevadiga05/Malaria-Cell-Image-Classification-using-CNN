@@ -1,0 +1,21 @@
+<!-- templates/admin_feedbacks.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Feedbacks</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h2>📋 Clinic Feedback Received</h2>
+  <table>
+    <tr><th>Name</th><th>Clinic</th><th>Message</th></tr>
+    {% for fb in feedbacks %}
+      <tr>
+        <td>{{ fb[0] }}</td>
+        <td>{{ fb[1] }}</td>
+        <td>{{ fb[2] }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
