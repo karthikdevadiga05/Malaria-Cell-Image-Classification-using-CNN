@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Feedback Submitted | Malaria Detection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome for checkmark icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font for consistency -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background: linear-gradient(120deg, #eaf6f0 0%, #f5f5f3 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .feedback-success-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+            padding: 44px 36px 36px 36px;
+            min-width: 320px;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeInCenter 0.8s cubic-bezier(.42,0,.58,1) 0.1s forwards;
+            opacity: 0;
+            transform: scale(0.97) translateY(32px);
+            backdrop-filter: blur(7px);
+        }
+        @keyframes fadeInCenter {
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .checkmark {
+            font-size: 64px;
+            color: #4CAF50;
+            animation: pop 0.6s cubic-bezier(.42,0,.58,1);
+            margin-bottom: 10px;
+        }
+        @keyframes pop {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.15);}
+            100% { transform: scale(1);}
+        }
+        h1 {
+            color: #2c4c47;
+            margin: 20px 0 10px;
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+        p {
+            color: #23413b;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        .btn {
+            background: #2c4c47;
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.08rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(15, 144, 201, 0.13);
+            transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #0f90c9;
+            box-shadow: 0 8px 32px rgba(15, 144, 201, 0.18);
+            transform: translateY(-2px) scale(1.04);
+            color: #fff;
+        }
+        .btn i {
+            margin-right: 7px;
+        }
+        @media (max-width: 500px) {
+            .feedback-success-card {
+                padding: 18px 4px 14px 4px;
+                min-width: unset;
+                max-width: 99vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="feedback-success-card">
+        <div class="checkmark">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1>Thank you for your feedback!</h1>
+        <p>We appreciate your contribution and will use it to improve this platform for all clinics and labs.</p>
+        <a href="{{ url_for('index') }}" class="btn">
+            <i class="fas fa-home"></i> Go to Home
+        </a>
+    </div>
+</body>
+</html>
