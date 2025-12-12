@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malaria Cell Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(120deg, #eaf6f0 0%, #f5f5f3 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      color: #23413b;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1px 20px;
+      background: linear-gradient(90deg, #2c4c47 80%, #5eb89c 100%);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(44, 76, 71, 0.12);
+      position: sticky;
+      top: 9px;
+      z-index: 1000;
+      height: 70px;
+    }
+
+    .integration-card .card-content {
+      background: linear-gradient(90deg, #eaf6f0 60%, #f5f5f3 100%);
+      border-radius: 14px;
+      padding: 18px 18px 10px 18px;
+      margin-bottom: 0;
+    }
+
+    .welcome-banner {
+      width: 100%;
+      background: linear-gradient(90deg, #5eb89c 5%, #2c4c47 50%, #5eb89c 120%);
+      color: #fff;
+      padding: 22px 32px;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    @media (max-width: 400px) {
+      html {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .nav-buttons {
+        flex-direction: row !important;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+
+      header {
+        padding: 1px 5px;
+        height: auto;
+      }
+    }
+
+
+    @media (max-width: 900px) {
+      .workflow-steps {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .workflow-arrow {
+        display: none;
+      }
+    }
+
+
+    .logo {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+   .nav-buttons {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.nav-buttons a {
+  text-decoration: none;
+  padding: 10px 22px;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 30px;
+  background: transparent;
+  border: 2px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-shadow: none;
+}
+
+.nav-buttons a:hover,
+.nav-buttons a:focus,
+.nav-buttons a.active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #fff;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+    .user-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-icon {
+      height: 36px;
+      border-radius: 50%;
+    }
+
+    .username {
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .form-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 60vh;
+      /* Adjust as needed */
+      padding-top: 0;
+      /* Animation */
+      opacity: 0;
+      transform: scale(0.95) translateY(40px);
+      animation: fadeInCenter 0.8s cubic-bezier(.42, 0, .58, 1) 0.25s forwards;
+    }
+
+    @keyframes fadeInCenter {
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    #upload-form {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.90);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+      backdrop-filter: blur(7px);
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"] {
+      width: 67%;
+      padding: 12px 15px;
+      margin: 10px 0 20px;
+      border: 1.5px solid #cbe6f1;
+      background-color: #f5f5f3;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #333;
+      transition: border 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus {
+      border-color: #2c4c47;
+      background: #eaf6f0;
+    }
+
+    input::placeholder {
+      color: #999;
+    }
+
+    .btn-glow {
+      display: inline-block;
+      background: #3c4b98;
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 18px;
+      box-shadow: 0 4px 20px rgba(15, 144, 201, 0.15);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+      text-decoration: none;
+    }
+
+    .btn-glow:hover {
+      background: #0f90c9;
+      box-shadow: 0 8px 32px rgba(15, 144, 201, 0.22);
+      transform: translateY(-2px) scale(1.04);
+    }
+
+    .features-section {
+      position: relative;
+      /* Needed for pseudo-element */
+      color: white;
+      background: rgba(255, 255, 255, 0.93);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+      backdrop-filter: blur(7px);
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 36px 28px;
+      overflow: hidden;
+      /* Ensures bg doesn't spill out */
+    }
+
+    /* Add the background image using ::before */
+    .features-section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('/static/images/b1.jpg');
+      /* <-- your image path */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.90;
+      /* Adjust for more/less transparency */
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Raise content above the background image */
+    .features-section>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .features-grid {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 18px;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .feature-card {
+      min-width: 180px;
+      max-width: 320px;
+      flex: 1 1 0;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+      padding: 24px 16px;
+      margin: 0 8px;
+      text-align: center;
+      transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+    }
+
+    .hero-section,
+    .about-section,
+    .malaria-info-section,
+    .user-section {
+      background: rgba(255, 255, 255, 0.93);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+      backdrop-filter: blur(7px);
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 36px 28px;
+    }
+
+    .features-grid {
+      display: flex;
+      flex-direction: row;
+      /* Ensure horizontal layout */
+      flex-wrap: nowrap;
+      /* Prevent wrapping to next line */
+      gap: 18px;
+      /* Space between cards */
+      justify-content: center;
+      /* Center the cards horizontally */
+      align-items: stretch;
+      /* Make cards the same height */
+    }
+
+    /* Each card can have a min/max width for responsiveness */
+    .feature-card {
+      min-width: 180px;
+      max-width: 320px;
+      flex: 1 1 0;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+      padding: 24px 16px;
+      margin: 0 8px;
+      text-align: center;
+      transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+    }
+
+    @media (max-width: 900px) {
+
+      .features-grid,
+      .user-grid {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .feature-card,
+      .user-card {
+        min-width: 0;
+        width: 100%;
+        margin: 0 0 16px 0;
+      }
+
+      header {
+        flex-direction: column;
+        height: auto;
+        padding: 8px 5px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .about-grid {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+      }
+
+      .expand-card {
+        max-width: 98vw;
+      }
+    }
+
+    @media (max-width: 600px) {
+      #upload-form {
+        padding: 12px 4px;
+        max-width: 98vw;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="number"] {
+        width: 95%;
+        font-size: 1rem;
+      }
+
+      .nav-buttons {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        width: 100%;
+      }
+    }
+
+
+
+
+    .user-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      justify-content: center;
+    }
+
+    .user-card {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+      border-radius: 18px;
+      padding: 28px 18px 20px 18px;
+      margin: 12px;
+      min-width: 220px;
+      flex: 1 1 220px;
+      backdrop-filter: blur(7px);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.3s, color 0.3s;
+      opacity: 0;
+      transform: translateY(40px) scale(0.97);
+      animation: cardFadeInUp 0.8s cubic-bezier(.42, 0, .58, 1) forwards;
+    }
+
+    .user-card:nth-child(1),
+    .feature-card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .user-card:nth-child(2),
+    .feature-card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .user-card:nth-child(3),
+    .feature-card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes cardFadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .user-card:hover,
+    .feature-card:hover {
+      background: linear-gradient(120deg, #2c4c47 0%, #0f90c9 100%);
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(15, 144, 201, 0.18);
+      transform: translateY(-8px) scale(1.03);
+    }
+
+    .user-card h4,
+    .feature-card h3 {
+      color: #2c4c47;
+      margin-top: 0;
+      transition: color 0.3s;
+    }
+
+    .user-card:hover h4,
+    .feature-card:hover h3 {
+      color: #fff;
+    }
+
+    footer {
+      background: #2c4c47;
+      color: #fff;
+      text-align: center;
+      padding: 18px 0;
+      border-radius: 0 0 16px 16px;
+      margin-top: 40px;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 1100px) {
+
+      .hero-section,
+      .user-section,
+      .features-section,
+      .about-section,
+      .malaria-info-section {
+        max-width: 99vw;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .hero-section {
+        flex-direction: column;
+        gap: 18px;
+        padding: 22px 10px;
+      }
+    }
+
+    @media (max-width: 600px) {
+
+      .user-grid,
+      .features-grid {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .about-section,
+      .malaria-info-section {
+        padding: 12px 4px;
+      }
+
+      #upload-form {
+        padding: 14px 4px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .nav-buttons {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      header {
+        padding: 1px 5px;
+        height: auto;
+      }
+    }
+
+    .proverb-box-modern {
+      margin: 36px auto 24px auto;
+      padding: 28px 36px;
+      font-size: 1.18rem;
+      font-weight: 600;
+      text-align: center;
+      color: #fff;
+      min-height: 70px;
+      max-width: 1300px;
+      box-shadow: 0 6px 24px rgba(44, 76, 71, 0.14);
+      letter-spacing: 0.2px;
+      position: relative;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background: linear-gradient(90deg, #5eb89c 5%, #2c4c47 50%, #5eb89c 120%);
+      transition: background 0.7s;
+      overflow: hidden;
+    }
+
+    .proverb-icon {
+      font-size: 2.2rem;
+      opacity: 0.25;
+      margin-right: 10px;
+      user-select: none;
+    }
+
+    #proverb-text {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity, transform;
+    }
+
+    .proverb-box-modern.show #proverb-text {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 600px) {
+      .proverb-box-modern {
+        padding: 18px 8vw;
+        font-size: 1.02rem;
+      }
+
+      .proverb-icon {
+        font-size: 1.5rem;
+      }
+    }
+
+    .hero-section {
+      position: relative;
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0 60px 0;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Background image as a pseudo-element */
+    .hero-section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: url('/static/images/bg5.jpeg') center center/cover no-repeat;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Optional: dark overlay for better text readability */
+    .hero-section::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(15, 144, 201, 0.18) 0%, rgba(44, 76, 71, 0.18) 100%);
+      opacity: 0.7;
+      /* Lower for lighter overlay */
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Raise content above overlays */
+    .hero-section>* {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-text h2 {
+      color: #fff;
+      font-size: 2.5rem;
+      margin-bottom: 18px;
+      text-shadow: 0 2px 8px rgba(44, 76, 71, 0.10);
+    }
+
+    .hero-text p {
+      color: #f6f6f6;
+      font-size: 1.2rem;
+      margin-bottom: 24px;
+      text-shadow: 0 2px 8px rgba(44, 76, 71, 0.10);
+    }
+
+    .btn-glow {
+      background: #0f90c9;
+      color: #fff;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(15, 144, 201, 0.10);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-glow:hover {
+      background: #174e5a;
+      box-shadow: 0 8px 32px rgba(15, 144, 201, 0.18);
+    }
+
+    @media (max-width: 700px) {
+      .hero-section {
+        padding: 30px 0 30px 0;
+      }
+
+      .hero-text h2 {
+        font-size: 1.5rem;
+      }
+
+      .hero-text p {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+  <div class="flash {{ category }}">{{ message }}</div>
+  {% endfor %}
+  {% endwith %}
+
+  <header>
+    <div class="container">
+      <nav>
+        <ul>
+          <div class="nav-buttons">
+            <li><a href="/" class="{% if request.path == '/' %}active{% endif %}"> Home</a></li>
+            <li><a href="/about" class="{% if request.path == '/about' %}active{% endif %}">About</a></li>
+            <li><a href="/contact" class="{% if request.path == '/contact' %}active{% endif %}">Contact</a></li>
+            <li><a href="/reports" class="{% if request.path == '/reports' %}active{% endif %}">Reports</a></li>
+            <li><a href="/diary" class="{% if request.path == '/diary/' %}active{% endif %}"> My Diary</a></li>
+            <li><a href="{{ url_for('admin_analytics') }}">Analytics Dashboard</a></li>
+
+          </div>
+        </ul>
+      </nav>
+      {% if 'username' in session %}
+      <div class="top-bar">
+        <a href="{{ url_for('profile') }}" class="profile-link">
+          <img src="{{ url_for('static', filename='images/user.png') }}" class="user-icon" alt="User Icon">
+          <span class="username">{{ session['username'] }}</span>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <main>
+    {% if show_about %}
+    <section class="about-section">
+      <h2 class="about-heading">About This Project</h2>
+
+      <!-- Rotating Medical Quotes -->
+      <div class="quote-container">
+        <div class="quote-slider">
+          <div class="quote active">"The art of medicine consists in amusing the patient while nature cures the
+            disease." - Voltaire</div>
+          <div class="quote">"Wherever the art of medicine is loved, there is also a love of humanity." - Hippocrates
+          </div>
+          <div class="quote">"Medicine is a science of uncertainty and an art of probability." - William Osler</div>
+          <div class="quote">"The good physician treats the disease; the great physician treats the patient who has the
+            disease." – William Osler</div>
+          <div class="quote">"Prevention is better than cure." – Desiderius Erasmus</div>
+          <div class="quote">"An ounce of prevention is worth a pound of cure." – Benjamin Franklin</div>
+          <div class="quote">"To cure sometimes, to relieve often, to comfort always." – Edward Livingston Trudeau</div>
+          <div class="quote">"The greatest medicine of all is teaching people how not to need it." – Hippocrates</div>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <!-- Project Overview Card -->
+        <div class="expand-card">
+          <div class="card-header">
+            <h3>📌 Project Overview</h3>
+            <div class="card-indicator">+</div>
+          </div>
+          <div class="card-content">
+            <p>This web application uses deep learning to detect malaria from blood smear images in real-time,
+              empowering healthcare professionals with fast, accurate, and accessible diagnostics.</p>
+            <div class="stats-counter">
+              <div class="stat">
+                <span class="count" data-target="36413">0</span>
+                <span>Images Analyzed</span>
+              </div>
+              <div class="stat">
+                <span class="count" data-target="95">0</span><span>%</span>
+                <span>Accuracy</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Tech Stack Card -->
+        <div class="expand-card">
+          <div class="card-header">
+            <h3>🛠️ Tech Stack</h3>
+            <div class="card-indicator">+</div>
+          </div>
+          <div class="card-content tech-row">
+            <div class="tech-item" data-tooltip="Flask Framework">
+              <img src="{{ url_for('static', filename='images/flask.svg') }}" alt="Flask Logo" style="height:40px;">
+              <div class="tech-wave"></div>
+            </div>
+            <div class="tech-item" data-tooltip="TensorFlow">
+              <img src="{{ url_for('static', filename='images/tensorflow.png') }}" alt="TensorFlow Logo"
+                style="height:40px;">
+              <div class="tech-wave"></div>
+            </div>
+            <div class="tech-item" data-tooltip="HTML/CSS">
+              <img src="{{ url_for('static', filename='images/html.png') }}" alt="HTML CSS Logo" style="height:40px;">
+              <div class="tech-wave"></div>
+            </div>
+            <div class="tech-item" data-tooltip="SQLite">
+              <img src="{{ url_for('static', filename='images/sqlite.png') }}" alt="SQLite Logo" style="height:40px;">
+              <div class="tech-wave"></div>
+            </div>
+          </div>
+        </div>
+
+        
+
+        <!-- Performance Card -->
+        <div class="expand-card">
+          <div class="card-header">
+            <h3>📈 Performance</h3>
+            <div class="card-indicator">+</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Achieved over 95% validation accuracy</li>
+              <li>Tested on thousands of real cell images</li>
+              <li>Robust to image quality and lighting variations</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Data Privacy Card -->
+        <div class="expand-card">
+          <div class="card-header">
+            <h3>🔒 Data Privacy</h3>
+            <div class="card-indicator">+</div>
+          </div>
+          <div class="card-content">
+            <ul>
+              <li>Patient confidentiality is our top priority</li>
+              <li>Uploaded images are used only for prediction and stored safely</li>
+              <li>No personal data is shared with third parties</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .about-section {
+        position: relative;
+        /* Needed for pseudo-element */
+        max-width: 1000px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+        padding: 36px 28px;
+        animation: fadeInUp 1.2s cubic-bezier(.42, 0, .58, 1) 0.1s both;
+        overflow: hidden;
+        /* Ensures bg doesn't spill out */
+      }
+
+      /* Pseudo-element for background image */
+      .about-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/static/images/b1.jpg');
+        /* <-- your image path */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.9;
+        /* Adjust for more/less transparency */
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      /* Raise content above the background image */
+      .about-section>* {
+        position: relative;
+        z-index: 1;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .about-heading {
+        color: white;
+        background-color: #eaf5fa;
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-align: center;
+        letter-spacing: 1px;
+        animation: fadeInUp 1s 0.2s both;
+      }
+
+      .about-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        align-items: center;
+        margin-top: 24px;
+      }
+
+      .about-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 24px;
+      }
+
+      .expand-card {
+        width: 100%;
+        max-width: 700px;
+        background: #fafcfc;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(44, 76, 71, 0.07);
+        margin-bottom: 24px;
+        transition: box-shadow 0.3s;
+        position: relative;
+      }
+
+      .expand-card:hover {
+        box-shadow: 0 8px 32px rgba(15, 144, 201, 0.14);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 22px 8px 22px;
+        cursor: pointer;
+      }
+
+      .card-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: #2c4c47;
+      }
+
+      .card-indicator {
+        font-size: 1.5rem;
+        color: #0f90c9;
+        transition: transform 0.3s;
+      }
+
+      .expand-card.expanded .card-indicator {
+        transform: rotate(45deg);
+      }
+
+      .card-content {
+        padding: 0 22px 22px 22px;
+        font-size: 1.08rem;
+        color: #23413b;
+        display: block;
+      }
+
+      .expand-card:not(.expanded) .card-content {
+        display: none;
+      }
+
+      /* Quote Slider Styles */
+      .quote-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        margin: 2rem auto;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+        min-height: 56px;
+      }
+
+      .quote {
+        position: absolute;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s cubic-bezier(.42, 0, .58, 1);
+        font-size: 1.2rem;
+        font-style: italic;
+        text-align: center;
+        left: 0;
+        right: 0;
+      }
+
+      .quote.active {
+        opacity: 1;
+        transform: translateY(0);
+        position: relative;
+      }
+
+      /* Stats Counter Animation */
+      .stats-counter {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 2rem;
+        gap: 24px;
+      }
+
+      .stat {
+        text-align: center;
+        background: rgba(44, 76, 71, 0.1);
+        padding: 1rem;
+        border-radius: 10px;
+        min-width: 120px;
+      }
+
+      .count {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #2c4c47;
+        display: block;
+      }
+
+      /* Image shimmer loader */
+      .img-loader-wrapper {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #ececec;
+        margin-top: 16px;
+      }
+
+      .img-loader {
+        width: 100%;
+        height: 100%;
+        border-radius: 14px;
+        background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s linear infinite;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+      }
+
+      @keyframes shimmer {
+        to {
+          background-position-x: -200%;
+        }
+      }
+
+      .about-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(44, 76, 71, 0.08);
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 3;
+        display: none;
+        transition: opacity 0.5s;
+      }
+
+      /* Tech Stack Hover Effects */
+      .tech-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-top: 18px;
+        justify-content: center;
+      }
+
+      .tech-item {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s;
+        padding: 8px;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(44, 76, 71, 0.05);
+      }
+
+      .tech-item:hover {
+        transform: translateY(-5px) scale(1.07);
+        background: linear-gradient(120deg, #2c4c47 0%, #0f90c9 100%);
+      }
+
+      .tech-wave {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent 25%, rgba(15, 144, 201, 0.1) 50%, transparent 75%);
+        pointer-events: none;
+      }
+
+      @media (max-width: 900px) {
+        .about-grid {
+          flex-direction: column;
+        }
+
+        .expand-card {
+          min-width: unset;
+        }
+      }
+    </style>
+
+    <script>
+      // Rotating Medical Quotes
+      let currentQuote = 0;
+      const quotes = document.querySelectorAll('.quote');
+      function showNextQuote() {
+        quotes[currentQuote].classList.remove('active');
+        currentQuote = (currentQuote + 1) % quotes.length;
+        quotes[currentQuote].classList.add('active');
+      }
+      setInterval(showNextQuote, 5000);
+
+      // Animated Number Counter
+      const counters = document.querySelectorAll('.count');
+      const animateCounters = () => {
+        counters.forEach(counter => {
+          const target = +counter.dataset.target;
+          const duration = 2000;
+          const step = target / (duration / 10);
+          let current = 0;
+          const updateCounter = () => {
+            current += step;
+            if (current < target) {
+              counter.textContent = Math.ceil(current);
+              setTimeout(updateCounter, 10);
+            } else {
+              counter.textContent = target;
+            }
+          }
+          updateCounter();
+        });
+      }
+      // Intersection Observer for animation triggers
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounters();
+            entry.target.style.opacity = 1;
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('.stat').forEach(stat => observer.observe(stat));
+
+      // Card Expand/Collapse
+      document.querySelectorAll('.card-header').forEach(header => {
+        header.addEventListener('click', () => {
+          const card = header.parentElement;
+          card.classList.toggle('expanded');
+        });
+      });
+
+      // Image shimmer loader
+      document.addEventListener('DOMContentLoaded', function () {
+        const img = document.querySelector('.about-img');
+        const loader = document.querySelector('.img-loader');
+        img.addEventListener('load', function () {
+          loader.style.display = 'none';
+          img.style.display = 'block';
+          img.style.opacity = 1;
+        });
+        // If image is cached
+        if (img.complete) {
+          loader.style.display = 'none';
+          img.style.display = 'block';
+          img.style.opacity = 1;
+        }
+      });
+    </script>
+
+    {% else %}
+    {% if user %}
+    <div class="welcome-banner">
+      <h2>Welcome, {{ user['full_name'] }} from {{ user['hospital'] }}!</h2>
+    </div>
+    {% endif %}
+
+    <!-- proverbs display -->
+
+    <div id="proverb-box" class="proverb-box-modern">
+      <span class="proverb-icon">❝</span>
+      <span id="proverb-text"></span>
+    </div>
+
+
+
+    <!-- 🌟 Hero Section -->
+    <section class="hero-section animated-slide">
+      <div class="hero-text">
+        <h2>Early Detection. Accurate Diagnosis.</h2>
+        <p>
+          Harnessing AI for rapid, reliable malaria diagnosis.<br>
+          Empowering clinics and doctors with instant results.
+        </p>
+        <div style="margin-top:20px;">
+          <a href="#features-section" class="btn-glow">Upload data</a>
+        </div>
+      </div>
+      <div class="hero-img">
+        <!-- LottieFiles CDN -->
+        <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+        <lottie-player src="{{ url_for('static', filename='lottie/brain.json') }}" background="transparent" speed="1"
+          style="width: 519x; height: 320px;" loop autoplay>
+        </lottie-player>
+      </div>
+
+    </section>
+
+
+
+
+
+
+    <!-- How It Works Section Start -->
+    <section class="how-it-works-modern">
+      <h2 class="hiw-title">How It Works</h2>
+      <div class="steps-modern">
+        <div class="step-modern left">
+          <div class="animation">
+            <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_9wpyhdzo.json" background="transparent"
+              speed="1" loop autoplay style="width:90px;height:90px;"></lottie-player>
+          </div>
+          <div class="text">
+            <h3>Step 1: Upload an Image</h3>
+            <p>Use our intuitive interface to upload a microscope image of red blood cells. Make sure the image is clear
+              and of high resolution to allow accurate detection. Accepted formats include JPG, PNG.</p>
+          </div>
+        </div>
+        <div class="step-modern right">
+          <div class="animation">
+            <lottie-player src="https://assets10.lottiefiles.com/packages/lf20_5njp3vgg.json" background="transparent"
+              speed="1" loop autoplay style="width:90px;height:90px;"></lottie-player>
+          </div>
+          <div class="text">
+            <h3>Step 2: AI Diagnosis</h3>
+            <p>Our advanced AI algorithm processes the image in seconds to detect signs of malaria. The system
+              identifies parasitic infections in red blood cells and provides a confidence score for the diagnosis,
+              minimizing human error.</p>
+          </div>
+        </div>
+        <div class="step-modern left">
+          <div class="animation">
+            <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_0yfsb3a1.json" background="transparent"
+              speed="1" loop autoplay style="width:90px;height:90px;"></lottie-player>
+          </div>
+          <div class="text">
+            <h3>Step 3: View and Download Report</h3>
+            <p>Receive a detailed diagnostic report including infection stage and recommended next steps. You can
+              download the report as PDF or access it later from your dashboard. Useful for patient consultation and
+              record-keeping.</p>
+          </div>
+        </div>
+        <div class="step-modern right">
+          <div class="animation">
+            <lottie-player src="https://assets10.lottiefiles.com/packages/lf20_8wREpI.json" background="transparent"
+              speed="1" loop autoplay style="width:90px;height:90px;"></lottie-player>
+          </div>
+          <div class="text">
+            <h3>Step 4: Analytics & Insights</h3>
+            <p>Access interactive analytics dashboards to visualize your test history, track trends, and monitor your
+              malaria status over time. Our charts and graphs make it easy to understand your health data and support
+              informed decisions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+    <style>
+      .how-it-works-modern {
+        position: relative;
+        /* Needed for absolute pseudo-element */
+        background: #f8fcfa;
+        padding: 36px 24px 32px 24px;
+        margin: 48px 0 0 0;
+        box-shadow: 0 8px 32px rgba(44, 76, 71, 0.07);
+        max-width: 1300px;
+        margin-left: auto;
+        margin-right: auto;
+        overflow: hidden;
+        /* Ensures bg doesn't spill out */
+      }
+
+      /* Pseudo-element for transparent background image */
+      .how-it-works-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/static/images/b1.jpg');
+        /* <-- your image path */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.90;
+        /* Adjust for more/less transparency */
+        z-index: 0;
+        pointer-events: none;
+        /* So it doesn't block clicks */
+      }
+
+      /* Raise content above the bg image */
+      .how-it-works-modern>* {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hiw-title {
+        text-align: center;
+        color: #0f90c9;
+        font-size: 2rem;
+        margin-bottom: 36px;
+        letter-spacing: 0.5px;
+      }
+
+      .steps-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 34px;
+        max-width: 1000px;
+        margin: 0 auto;
+        width: 100%;
+        position: relative;
+      }
+
+      .step-modern {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 16px rgba(15, 144, 201, 0.06);
+        padding: 22px 18px;
+        transition: box-shadow 0.22s, background 0.22s;
+        width: 90%;
+        max-width: 700px;
+      }
+
+      .step-modern.left {
+        flex-direction: row;
+        align-self: flex-start;
+      }
+
+      .step-modern.right {
+        flex-direction: row-reverse;
+        align-self: flex-end;
+      }
+
+      .step-modern .animation {
+        margin: 0 26px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .step-modern.left .animation {
+        margin-left: 0;
+      }
+
+      .step-modern.right .animation {
+        margin-right: 0;
+      }
+
+      .step-modern .text h3 {
+        margin: 0 0 8px 0;
+        color: #174e5a;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .step-modern .text p {
+        color: #384c47;
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+
+      .step-modern:hover {
+        box-shadow: 0 8px 24px rgba(15, 144, 201, 0.13);
+        background: #eaf5fa;
+      }
+
+      /* Responsive: stack vertically on small screens */
+      @media (max-width: 900px) {
+
+        .step-modern,
+        .step-modern.left,
+        .step-modern.right {
+          flex-direction: column !important;
+          align-items: center;
+          align-self: center;
+          width: 100%;
+          max-width: 98vw;
+        }
+
+        .step-modern .animation {
+          margin: 0 0 14px 0;
+        }
+
+        .hiw-title {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+
+
+
+    <!-- 📤 Upload -->
+    <section class="upload-section" id="upload-section">
+      <h2>Upload Blood Smear Image</h2>
+      <p>Select and upload an image to begin prediction.</p>
+      <div class="form-wrapper">
+        <form action="/predict" method="post" enctype="multipart/form-data" id="upload-form">
+          <label for="patient_id"><img src="{{ url_for('static', filename='images/id-card.png') }}" alt="User Icon"
+              style="width: 20px; height: 22px; vertical-align: middle; margin-right: 8px;">Enter Patient ID</label><br>
+          <input type="text" name="patient_id" placeholder="Enter Patient ID" required><br>
+          <label for="patient_name"><img src="{{ url_for('static', filename='images/user.png') }}" alt="User Icon"
+              style="width: 20px; height: 22px; vertical-align: middle; margin-right: 8px;">
+            Enter Name</label><br>
+         <input 
+  type="text" 
+  name="patient_name" 
+  placeholder="Enter Patient Name" 
+  required 
+  pattern="^[A-Za-z\s]+$" 
+  title="Patient name should contain only letters and spaces">
+<br>
+
+          <label for="phone"><img src="{{ url_for('static', filename='images/phone-call.png') }}" alt="User Icon"
+              style="width: 20px; height: 22px; vertical-align: middle; margin-right: 8px;">
+            Enter Phone number</label><br>
+          <input type="text" name="phone" pattern="\d{10}" placeholder="Enter Phone Number" required><br>
+          <label for="age"><img src="{{ url_for('static', filename='images/user.png') }}" alt="User Icon"
+              style="width: 20px; height: 22px; vertical-align: middle; margin-right: 8px;">Enter age</label><br>
+          <input type="number" name="age" placeholder="Enter Age" required min="4" max="200"><br>
+          <label for="sex"><img src="{{ url_for('static', filename='images/user.png') }}" alt="User Icon"
+              style="width: 20px; height: 22px; vertical-align: middle; margin-right: 8px;">Enter Gender</label><br>
+          <div class="field-group">
+            <select name="sex" required>
+              <option value="" disabled selected>Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="file-input-container">
+            <input type="file" name="file" id="file-input" accept="image/*" required>
+            <label for="file-input" class="file-label">
+              <span id="file-name">Choose an image</span>
+            </label>
+          </div>
+          <div class="image-preview-wrapper">
+            <img id="image-preview" src="#" alt="Preview Image" />
+          </div>
+          <div class="button-wrapper">
+            <button type="submit" class="submit-btn">Detect Malaria</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 📦 Features -->
+    <section class="features-section">
+      <br>
+      <h2>Why Use Our Platform?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>⚡ Fast Detection</h3>
+          <p>Instant prediction powered by AI.</p>
+        </div>
+        <div class="feature-card">
+          <h3>🎯 High Accuracy</h3>
+          <p>Deep learning model trained on medical images.</p>
+        </div>
+        <div class="feature-card">
+          <h3>🧑‍⚕️ For Professionals</h3>
+          <p>Built for doctors and hospitals.</p>
+        </div>
+      </div>
+    </section>
+
+
+
+    {% endif %}
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Malaria Detection | MGM Evening College</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+
+
+    const proverbs = [
+      "A stitch in time saves nine.",
+      "Prevention is better than cure.",
+      "An ounce of prevention is worth a pound of cure.",
+      "Health is wealth.",
+      "The greatest medicine of all is teaching people how not to need it.",
+      "To cure sometimes, to relieve often, to comfort always.",
+      "Early to bed and early to rise, makes a man healthy, wealthy, and wise.",
+      "Eat to live, not live to eat.",
+      "A healthy outside starts from the inside.",
+      "Take care of your body. It's the only place you have to live.",
+      "Your body hears everything your mind says.",
+      "The first wealth is health.",
+      "Good health and good sense are two of life’s greatest blessings.",
+      "Walking is man’s best medicine.",
+      "A calm mind brings inner strength and self-confidence.",
+      "Happiness is the highest form of health.",
+      "An apple a day keeps the doctor away.",
+      "The groundwork of all happiness is health.",
+      "He who has health has hope; and he who has hope has everything.",
+      "Health is the crown on the well person’s head that only the ill person can see.",
+      "A healthy attitude is contagious but don’t wait to catch it from others. Be a carrier.",
+      "The best doctor gives the least medicine.",
+      "Health is not valued till sickness comes.",
+      "Good health is not something we can buy. However, it can be an extremely valuable savings account.",
+      "Take care of your body; it’s the only place you have to live.",
+      "Health is the greatest gift, contentment the greatest wealth, faithfulness the best relationship."
+    ];
+
+    let idx = 0;
+    function showProverb() {
+      const proverbBox = document.getElementById('proverb-box');
+      const proverbText = document.getElementById('proverb-text');
+      proverbBox.classList.remove('show');
+      setTimeout(() => {
+        proverbText.textContent = proverbs[idx];
+        proverbBox.classList.add('show');
+        idx = (idx + 1) % proverbs.length;
+      }, 200);
+    }
+    showProverb();
+    setInterval(showProverb, 4000);
+
+  </script>
+
+
+</body>
+
+</html>
