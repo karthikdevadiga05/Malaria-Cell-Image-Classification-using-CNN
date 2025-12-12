@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Detection Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+       :root {
+    --primary-color: #38876a;
+    --secondary-color: #2c4c47;
+    --accent-color: #cee3e5;
+    --positive-color: #3dbb7d;
+    --danger-color: #e74a3b;
+    --card-border: 1px solid #38876a;
+    --card-shadow: 0 0.15rem 1.75rem 0 rgba(56, 135, 106, 0.15);
+}
+
+body {
+    background: linear-gradient(120deg, #eaf6f0 0%, #f5f5f3 100%);
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.dashboard-card {
+    border: var(--card-border);
+    border-radius: 0.35rem;
+    box-shadow: var(--card-shadow);
+    background-color: var(--accent-color);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: var(--secondary-color);
+    border-bottom: var(--card-border);
+    padding: 0.75rem 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.positive-bg {
+    background-color: rgba(61, 187, 125, 0.09);
+    color: var(--positive-color);
+}
+
+.negative-bg {
+    background-color: rgba(231, 74, 59, 0.09);
+    color: var(--danger-color);
+}
+
+.total-bg {
+    background-color: rgba(56, 135, 106, 0.09);
+    color: var(--secondary-color);
+}
+
+.stat-card {
+    border-left: 0.25rem solid;
+    border-radius: 0.35rem;
+    padding: 1rem;
+}
+
+.stat-card.positive {
+    border-left-color: var(--positive-color);
+}
+
+.stat-card.negative {
+    border-left-color: var(--danger-color);
+}
+
+.stat-card.total {
+    border-left-color: var(--primary-color);
+}
+
+.stat-card .stat-title {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+}
+
+.stat-card .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.date-filter {
+    padding: 1rem;
+    background-color: #38876a;
+    border: var(--card-border);
+    border-radius: 0.35rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(206, 227, 229, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.chart-container {
+    position: relative;
+}
+
+.no-data-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #38876a;
+    display: none;
+}
+
+/* Dark mode styles */
+.dark-mode {
+    background-color: #1a1a1a;
+    color: #cee3e5;
+}
+
+.dark-mode .dashboard-card {
+    background-color: #2c4c47;
+    border-color: #38876a;
+}
+
+.dark-mode .card-header {
+    background-color: #38876a;
+    border-color: #2c4c47;
+    color: #cee3e5;
+}
+
+.dark-mode .date-filter {
+    background-color: #23413b;
+    border-color: #38876a;
+    color: #cee3e5;
+}
+
+.dark-mode .loading-overlay {
+    background-color: rgba(44, 76, 71, 0.7);
+}
+
+.dark-mode .no-data-message {
+    color: #cee3e5;
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Malaria Detection Analytics Dashboard</h1>
+            <div>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-sm me-2">
+                    Back to Home
+                </a>
+                <button id="toggleTheme" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-moon"></i> Toggle Dark Mode
+                </button>
+            </div>
+        </div>
+
+        <!-- Date Filter -->
+        <div class="date-filter shadow-sm">
+            <div class="row align-items-center">
+                <div class="col-md-auto mb-2 mb-md-0">
+                    <label for="date-range">Time Range:</label>
+                </div>
+                <div class="col-md-auto mb-2 mb-md-0">
+                    <select id="date-range" class="form-select">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="90">Last 3 Months</option>
+                        <option value="180">Last 6 Months</option>
+                        <option value="365">Last Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="col-md-auto mb-2 mb-md-0 custom-date-inputs" style="display: none;">
+                    <div class="input-group">
+                        <span class="input-group-text">From</span>
+                        <input type="date" id="start-date" class="form-control">
+                        <span class="input-group-text">To</span>
+                        <input type="date" id="end-date" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-auto mb-2 mb-md-0">
+                    <button id="apply-filter" class="btn btn-primary">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row">
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="dashboard-card shadow h-100">
+                    <div class="card-body">
+                        <div class="stat-card total">
+                            <div class="stat-title">Total Tests</div>
+                            <div class="stat-value" id="total-tests">0</div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="dashboard-card shadow h-100">
+                    <div class="card-body">
+                        <div class="stat-card positive">
+                            <div class="stat-title">Positive Cases</div>
+                            <div class="stat-value" id="positive-cases">0 (0%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="dashboard-card shadow h-100">
+                    <div class="card-body">
+                        <div class="stat-card negative">
+                            <div class="stat-title">Negative Cases</div>
+                            <div class="stat-value" id="negative-cases">0 (0%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <!-- Weekly Chart -->
+            <div class="col-xl-8 col-lg-7">
+                <div class="dashboard-card shadow mb-4">
+                    <div class="card-header">
+                        Weekly Infection Rate
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="weeklyChart"></canvas>
+                            <div class="loading-overlay" id="weekly-loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="no-data-message" id="weekly-no-data">
+                                <p>No data available for the selected period</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="dashboard-card shadow mb-4">
+                    <div class="card-header">
+                        Monthly Summary
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="monthlyChart"></canvas>
+                            <div class="loading-overlay" id="monthly-loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="no-data-message" id="monthly-no-data">
+                                <p>No data available for the selected period</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demographics Row -->
+        <div class="row">
+            <!-- Age Distribution -->
+            <div class="col-lg-6">
+                <div class="dashboard-card shadow mb-4">
+                    <div class="card-header">
+                        Age Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:250px;">
+                            <canvas id="ageChart"></canvas>
+                            <div class="loading-overlay" id="age-loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="no-data-message" id="age-no-data">
+                                <p>No age data available for the selected period</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gender Distribution -->
+            <div class="col-lg-6">
+                <div class="dashboard-card shadow mb-4">
+                    <div class="card-header">
+                        Gender Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:250px;">
+                            <canvas id="genderChart"></canvas>
+                            <div class="loading-overlay" id="gender-loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="no-data-message" id="gender-no-data">
+                                <p>No gender data available for the selected period</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global chart objects
+        let weeklyChart = null;
+        let monthlyChart = null;
+        let ageChart = null;
+        let genderChart = null;
+
+        // Helper function to format dates for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        // Function to convert ISO week format to approximate date
+        // Function to convert ISO week format to approximate date
+function getDateFromISOWeek(year, week) {
+    console.log(`Converting ISO week: Year ${year}, Week ${week}`);
+    
+    // Input validation
+    if (isNaN(year) || isNaN(week)) {
+        console.error(`Invalid year or week: Year=${year}, Week=${week}`);
+        // Return current date as fallback
+        return new Date();
+    }
+    
+    try {
+        // Create a date for Jan 1 of the given year
+        const simple = new Date(year, 0, 1 + (week - 1) * 7);
+        console.log(`Initial date calculation: ${simple.toISOString()}`);
+        
+        const day = simple.getDay();
+        // Adjust to get Monday (ISO weeks start on Monday)
+        const date = simple.getDate() - day + (day === 0 ? -6 : 1);
+        
+        const result = new Date(simple.setDate(date));
+        console.log(`Final date result: ${result.toISOString()}`);
+        return result;
+    } catch (e) {
+        console.error(`Error in getDateFromISOWeek: ${e.message}`);
+        return new Date(); // Return current date as fallback
+    }
+}
+
+        // Show loading state for a specific chart
+        function showLoading(chartId) {
+            document.getElementById(`${chartId}-loading`).style.display = 'flex';
+            document.getElementById(`${chartId}-no-data`).style.display = 'none';
+        }
+
+        // Hide loading state and show chart or no-data message
+        function hideLoading(chartId, hasData) {
+            document.getElementById(`${chartId}-loading`).style.display = 'none';
+            document.getElementById(`${chartId}-no-data`).style.display = hasData ? 'none' : 'block';
+        }
+
+
+
+        // Update the dashboard with data
+        function updateDashboard(data) {
+            updateKPIs(data.overall);
+            updateWeeklyChart(data.weekly);
+            updateMonthlyChart(data.monthly);
+            updateDemographicCharts(data.demographics);
+        }
+
+        // Enhanced fetch function with better error handling
+        function fetchDashboardData(startDate = null, endDate = null) {
+            // Show loading state for all charts
+            ['weekly', 'monthly', 'age', 'gender'].forEach(chart => showLoading(chart));
+
+            const params = new URLSearchParams();
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+
+            console.log(`Fetching dashboard data with params: ${params.toString()}`);
+
+            // Add a timeout for the fetch request
+            const fetchPromise = fetch(`/api/dashboard/stats?${params}`);
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timed out')), 30000) // 30 second timeout
+            );
+
+            Promise.race([fetchPromise, timeoutPromise])
+                .then(response => {
+                    if (!response.ok) {
+                        // Provide more specific error handling based on status code
+                        if (response.status === 401) {
+                            throw new Error('Unauthorized access. Please log in again.');
+                        } else if (response.status === 500) {
+                            throw new Error('Server error. The database might be unavailable.');
+                        } else {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Complete dashboard data received:", data);
+
+                    // Validate data structure
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('Invalid data format received from server');
+                    }
+
+                    // Check if there's an error message in the response
+                    if (data.error) {
+                        throw new Error(`Server error: ${data.error}`);
+                    }
+
+                    updateDashboard(data);
+
+                    // Update last refresh time
+                    updateLastRefreshTime();
+                })
+                .catch(error => {
+                    console.error("Error fetching dashboard data:", error);
+
+                    // Show error message to user
+                    const errorBanner = document.createElement('div');
+                    errorBanner.className = 'alert alert-danger alert-dismissible fade show';
+                    errorBanner.role = 'alert';
+                    errorBanner.innerHTML = `
+                <strong>Error loading data!</strong> ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+
+                    // Add a "Try Again" button
+                    const tryAgainBtn = document.createElement('button');
+                    tryAgainBtn.className = 'btn btn-sm btn-outline-danger ms-2';
+                    tryAgainBtn.textContent = 'Try Again';
+                    tryAgainBtn.onclick = () => {
+                        errorBanner.remove();
+                        fetchDashboardData(startDate, endDate);
+                    };
+                    errorBanner.appendChild(tryAgainBtn);
+
+                    // Add a "Check Database" button for admins
+                    const checkDbBtn = document.createElement('button');
+                    checkDbBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+                    checkDbBtn.textContent = 'Check Database';
+                    checkDbBtn.onclick = () => checkDatabaseConnection();
+                    errorBanner.appendChild(checkDbBtn);
+
+                    // Insert at the top of the page
+                    const container = document.querySelector('.container-fluid');
+                    if (container.firstChild) {
+                        container.insertBefore(errorBanner, container.firstChild);
+                    } else {
+                        container.appendChild(errorBanner);
+                    }
+
+                    // Hide all loading indicators
+                    ['weekly', 'monthly', 'age', 'gender'].forEach(chart => hideLoading(chart, false));
+                });
+        }
+
+        // Function to check database connection
+        function checkDatabaseConnection() {
+            fetch('/api/debug/db_check')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(`Database Error: ${data.error}`);
+                        return;
+                    }
+
+                    // Create a modal to display database info
+                    const modal = document.createElement('div');
+                    modal.className = 'modal fade';
+                    modal.id = 'dbCheckModal';
+                    modal.setAttribute('tabindex', '-1');
+                    modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Database Diagnostics</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-success">
+                                <strong>Database Connection:</strong> Success
+                            </div>
+                            <div class="mb-3">
+                                <strong>Records in Database:</strong> ${data.record_count}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Date Range:</strong> ${data.date_range.min_date} to ${data.date_range.max_date}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Table Columns:</strong>
+                                <ul>
+                                    ${data.columns.map(col => `<li>${col.name} (${col.type})</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <strong>Sample Data:</strong>
+                                <pre class="bg-light p-3 mt-2" style="max-height: 200px; overflow: auto;">${JSON.stringify(data.sample_data, null, 2)}</pre>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                    document.body.appendChild(modal);
+
+                    // Initialize and show the modal
+                    const bsModal = new bootstrap.Modal(document.getElementById('dbCheckModal'));
+                    bsModal.show();
+
+                    // Remove modal from DOM after it's hidden
+                    modal.addEventListener('hidden.bs.modal', function () {
+                        modal.remove();
+                    });
+                })
+                .catch(error => {
+                    console.error("Error checking database:", error);
+                    alert(`Error checking database connection: ${error.message}`);
+                });
+        }
+
+        // Enhanced update function with additional validation
+        function updateKPIs(overall) {
+            // Debug: Log the data received from backend
+            console.log("Raw overall data received:", overall);
+
+            if (!overall) {
+                console.error("No overall data received");
+                document.getElementById('total-tests').textContent = "0";
+                document.getElementById('positive-cases').textContent = "0 (0%)";
+                document.getElementById('negative-cases').textContent = "0 (0%)";
+                return;
+            }
+
+            // Data validation
+            const validateNumber = (value, defaultValue = 0) => {
+                const num = Number(value);
+                return !isNaN(num) ? num : defaultValue;
+            };
+
+            // Convert and validate values
+            const total = validateNumber(overall.total);
+            const positive = validateNumber(overall.positive);
+            const negative = validateNumber(overall.negative);
+
+            // Recalculate percentages to ensure accuracy
+            const positive_percent = total > 0 ? (positive / total * 100) : 0;
+            const negative_percent = total > 0 ? (negative / total * 100) : 0;
+
+            // Debug: Log the parsed values
+            console.log("Parsed values:", { total, positive, negative, positive_percent, negative_percent });
+
+            document.getElementById('total-tests').textContent = total.toLocaleString();
+            document.getElementById('positive-cases').textContent =
+                `${positive.toLocaleString()} (${positive_percent.toFixed(1)}%)`;
+            document.getElementById('negative-cases').textContent =
+                `${negative.toLocaleString()} (${negative_percent.toFixed(1)}%)`;
+
+            // Add trend indicators if available
+            if (overall.positive_trend) {
+                const trendElement = document.getElementById('positive-trend');
+                if (trendElement) {
+                    const trendValue = parseFloat(overall.positive_trend);
+                    const trendClass = trendValue > 0 ? 'text-danger' : (trendValue < 0 ? 'text-success' : 'text-muted');
+                    const trendSymbol = trendValue > 0 ? '↑' : (trendValue < 0 ? '↓' : '');
+
+                    trendElement.className = `mt-2 small ${trendClass}`;
+                    trendElement.textContent = `${trendSymbol} ${Math.abs(trendValue).toFixed(1)}% from previous period`;
+                }
+            }
+        }
+
+
+
+        // Initialize and update weekly chart
+        // Enhanced version of updateWeeklyChart with better debugging
+function updateWeeklyChart(weeklyData) {
+    console.log("Weekly data received:", weeklyData);
+    const ctx = document.getElementById('weeklyChart').getContext('2d');
+
+    // Check if we have data
+    if (!weeklyData || weeklyData.length === 0) {
+        console.warn("No weekly data available");
+        hideLoading('weekly', false);
+        if (weeklyChart) {
+            weeklyChart.destroy();
+            weeklyChart = null;
+        }
+        return;
+    }
+
+    // Debug the structure of the first item
+    console.log("First weekly data item structure:", weeklyData[0]);
+
+    // Prepare data with enhanced error handling
+    const labels = weeklyData.map((item, index) => {
+        try {
+            console.log(`Processing week item ${index}:`, item);
+            
+            // Handle the YYYY-WW format
+            if (item.week && typeof item.week === 'string') {
+                if (item.week.includes('-W')) {
+                    const [year, weekNum] = item.week.split('-W');
+                    console.log(`Parsed year: ${year}, week: ${weekNum}`);
+                    
+                    // Get the Monday of that week
+                    const weekDate = getDateFromISOWeek(parseInt(year), parseInt(weekNum));
+                    return `Week ${weekNum} (${formatDate(weekDate)})`;
+                } 
+                // Handle the format directly from SQLite: YYYY-W%W (might be different)
+                else if (item.week.match(/^\d{4}-\d{1,2}$/)) {
+                    const [year, weekNum] = item.week.split('-');
+                    console.log(`Alternative format - Parsed year: ${year}, week: ${weekNum}`);
+                    
+                    const weekDate = getDateFromISOWeek(parseInt(year), parseInt(weekNum));
+                    return `Week ${weekNum} (${formatDate(weekDate)})`;
+                }
+                else {
+                    console.warn(`Unexpected week format: ${item.week}`);
+                    return `Week ${item.week}`;
+                }
+            } else {
+                console.warn(`Invalid week property at index ${index}:`, item.week);
+                return `Week ${index + 1}`;
+            }
+        } catch (e) {
+            console.error(`Error parsing week at index ${index}:`, e, item);
+            return `Week ${index + 1}`;
+        }
+    });
+
+    console.log("Processed labels:", labels);
+
+    // Safely extract data with validation
+    const positiveData = weeklyData.map((item, index) => {
+        const value = item.positive;
+        if (value === undefined || value === null) {
+            console.warn(`Missing positive value at index ${index}`);
+            return 0;
+        }
+        return value;
+    });
+
+    const negativeData = weeklyData.map((item, index) => {
+        const value = item.negative;
+        if (value === undefined || value === null) {
+            console.warn(`Missing negative value at index ${index}`);
+            return 0;
+        }
+        return value;
+    });
+
+    console.log("Processed data:", { positiveData, negativeData });
+
+    // If chart exists, update it
+    if (weeklyChart) {
+        console.log("Updating existing weekly chart");
+        weeklyChart.data.labels = labels;
+        weeklyChart.data.datasets[0].data = positiveData;
+        weeklyChart.data.datasets[1].data = negativeData;
+        weeklyChart.update();
+    } else {
+        console.log("Creating new weekly chart");
+        // Create new chart
+        weeklyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Positive Cases',
+                        data: positiveData,
+                        borderColor: '#1cc88a',
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Negative Cases',
+                        data: negativeData,
+                        borderColor: '#e74a3b',
+                        backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            // Add more context to tooltips
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.raw || 0;
+                                return `${label}: ${value.toLocaleString()}`;
+                            },
+                            footer: function(tooltipItems) {
+                                const index = tooltipItems[0].dataIndex;
+                                const data = weeklyData[index];
+                                if (data && typeof data.positive_percent === 'number') {
+                                    return `Positive Rate: ${data.positive_percent.toFixed(1)}%`;
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    hideLoading('weekly', true);
+    console.log("Weekly chart update complete");
+}
+        // Initialize and update monthly chart
+        function updateMonthlyChart(monthlyData) {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+
+            // Check if we have data
+            if (!monthlyData || monthlyData.length === 0) {
+                hideLoading('monthly', false);
+                if (monthlyChart) {
+                    monthlyChart.destroy();
+                    monthlyChart = null;
+                }
+                return;
+            }
+
+            // Prepare data
+            const labels = monthlyData.map(item => {
+                try {
+                    if (item.month) {
+                        const [year, month] = item.month.split('-');
+                        const date = new Date(parseInt(year), parseInt(month) - 1);
+                        return date.toLocaleString('default', { month: 'short', year: 'numeric' });
+                    } else {
+                        return 'Unknown';
+                    }
+                } catch (e) {
+                    console.error("Error parsing month:", e);
+                    return item.month || 'Unknown';
+                }
+            });
+
+            const positiveData = monthlyData.map(item => item.positive_percent || 0);
+
+            // If chart exists, update it
+            if (monthlyChart) {
+                monthlyChart.data.labels = labels;
+                monthlyChart.data.datasets[0].data = positiveData;
+                monthlyChart.update();
+            } else {
+                // Create new chart
+                monthlyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Positive %',
+                                data: positiveData,
+                                backgroundColor: 'rgba(28, 200, 138, 0.8)',
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `Positive: ${context.raw.toFixed(1)}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function (value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            hideLoading('monthly', true);
+        }
+
+        // Initialize and update demographic charts
+        function updateDemographicCharts(demographics) {
+            if (!demographics) {
+                hideLoading('age', false);
+                hideLoading('gender', false);
+                return;
+            }
+
+            // Age Chart
+            updateAgeChart(demographics.age);
+
+            // Gender Chart
+            updateGenderChart(demographics.gender);
+        }
+
+        function updateAgeChart(ageData) {
+            const ageCtx = document.getElementById('ageChart').getContext('2d');
+
+            // Check if we have data
+            if (!ageData || Object.keys(ageData).length === 0) {
+                hideLoading('age', false);
+                if (ageChart) {
+                    ageChart.destroy();
+                    ageChart = null;
+                }
+                return;
+            }
+
+            const ageGroups = Object.keys(ageData);
+            const agePositiveRates = ageGroups.map(age => ageData[age]?.positive_percent || 0);
+            const ageTotals = ageGroups.map(age => ageData[age]?.total || 0);
+
+            // Create a nice color array based on age groups
+            const backgroundColors = [
+                'rgba(78, 115, 223, 0.8)',
+                'rgba(28, 200, 138, 0.8)',
+                'rgba(246, 194, 62, 0.8)',
+                'rgba(231, 74, 59, 0.8)',
+                'rgba(54, 185, 204, 0.8)'
+            ];
+
+            if (ageChart) {
+                ageChart.data.labels = ageGroups;
+                ageChart.data.datasets[0].data = agePositiveRates;
+                ageChart.update();
+            } else {
+                ageChart = new Chart(ageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ageGroups,
+                        datasets: [{
+                            label: 'Positive Rate (%)',
+                            data: agePositiveRates,
+                            backgroundColor: backgroundColors.slice(0, ageGroups.length),
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const index = context.dataIndex;
+                                        const total = ageTotals[index];
+                                        const positive = ageData[ageGroups[index]]?.positive || 0;
+                                        return [
+                                            `Positive Rate: ${context.raw.toFixed(1)}%`,
+                                            `Positive Cases: ${positive}`,
+                                            `Total Tests: ${total}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function (value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            hideLoading('age', true);
+        }
+
+        function updateGenderChart(genderData) {
+            const genderCtx = document.getElementById('genderChart').getContext('2d');
+
+            // Check if we have data
+            if (!genderData || Object.keys(genderData).length === 0) {
+                hideLoading('gender', false);
+                if (genderChart) {
+                    genderChart.destroy();
+                    genderChart = null;
+                }
+                return;
+            }
+
+            const genders = Object.keys(genderData);
+            const genderTotals = genders.map(gender => genderData[gender]?.total || 0);
+            const genderPositives = genders.map(gender => genderData[gender]?.positive || 0);
+
+            // Format labels to capitalize first letter
+            const formattedLabels = genders.map(gender =>
+                gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
+            );
+
+            if (genderChart) {
+                genderChart.data.labels = formattedLabels;
+                genderChart.data.datasets[0].data = genderTotals;
+                genderChart.update();
+            } else {
+                genderChart = new Chart(genderCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: formattedLabels,
+                        datasets: [{
+                            label: 'Total Tests',
+                            data: genderTotals,
+                            backgroundColor: [
+                                'rgba(78, 115, 223, 0.8)',
+                                'rgba(28, 200, 138, 0.8)',
+                                'rgba(246, 194, 62, 0.8)' // For any additional gender categories
+                            ],
+                            hoverOffset: 4,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const index = context.dataIndex;
+                                        const positive = genderPositives[index];
+                                        const positivePercent = value > 0 ? ((positive / value) * 100).toFixed(1) : 0;
+
+                                        const total = genderTotals.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+
+                                        return [
+                                            `${label}: ${value.toLocaleString()} (${percentage}% of total)`,
+                                            `Positive: ${positive.toLocaleString()} (${positivePercent}%)`
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            hideLoading('gender', true);
+        }
+
+        // Handle date range selection
+        document.getElementById('date-range').addEventListener('change', function () {
+            const customDateInputs = document.querySelector('.custom-date-inputs');
+            if (this.value === 'custom') {
+                customDateInputs.style.display = 'block';
+
+                // Set default dates for custom range
+                const today = new Date();
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(today.getDate() - 30);
+
+                document.getElementById('end-date').value = today.toISOString().split('T')[0];
+                document.getElementById('start-date').value = thirtyDaysAgo.toISOString().split('T')[0];
+            } else {
+                customDateInputs.style.display = 'none';
+            }
+        });
+
+        // Apply filter button
+        document.getElementById('apply-filter').addEventListener('click', function () {
+            const dateRange = document.getElementById('date-range').value;
+            let startDate = null;
+            let endDate = null;
+
+            if (dateRange === 'custom') {
+                startDate = document.getElementById('start-date').value;
+                endDate = document.getElementById('end-date').value;
+
+                // ... continuing from the apply filter button click handler
+
+                if (!startDate || !endDate) {
+                    alert("Please select both start and end dates for custom range.");
+                    return;
+                }
+
+                // Validate date range
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+
+                if (start > end) {
+                    alert("Start date cannot be after end date.");
+                    return;
+                }
+            } else {
+                // Calculate dates based on selected range
+                const today = new Date();
+                endDate = today.toISOString().split('T')[0];
+
+                const startDateObj = new Date();
+                startDateObj.setDate(today.getDate() - parseInt(dateRange));
+                startDate = startDateObj.toISOString().split('T')[0];
+            }
+
+            // Fetch data with date filters
+            fetchDashboardData(startDate, endDate);
+        });
+
+        // Toggle dark mode
+        document.getElementById('toggleTheme').addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+
+            // Update charts for better visibility in dark mode
+            updateChartsForDarkMode();
+
+            // Save preference to localStorage
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
+        });
+
+        // Update charts for dark mode
+        function updateChartsForDarkMode() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const textColor = isDarkMode ? '#e0e0e0' : '#5a5c69';
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+            // Update chart configurations
+            const chartConfigs = [
+                { chart: weeklyChart, type: 'line' },
+                { chart: monthlyChart, type: 'bar' },
+                { chart: ageChart, type: 'bar' },
+                { chart: genderChart, type: 'pie' }
+            ];
+
+            chartConfigs.forEach(config => {
+                if (config.chart) {
+                    // Update text colors
+                    config.chart.options.plugins.legend.labels = {
+                        color: textColor
+                    };
+
+                    // Update grid lines for cartesian charts
+                    if (config.type !== 'pie') {
+                        config.chart.options.scales.y.grid = {
+                            color: gridColor,
+                            drawBorder: false
+                        };
+                        config.chart.options.scales.y.ticks = {
+                            color: textColor,
+                            precision: 0
+                        };
+                        config.chart.options.scales.x.ticks = {
+                            color: textColor
+                        };
+                    }
+
+                    config.chart.update();
+                }
+            });
+        }
+
+        // Check if data needs to be refreshed
+        let lastRefreshTime = localStorage.getItem('lastDashboardRefresh');
+        const refreshThreshold = 5 * 60 * 1000; // 5 minutes
+
+        function shouldRefreshData() {
+            if (!lastRefreshTime) return true;
+
+            const now = new Date().getTime();
+            const timeSinceLastRefresh = now - parseInt(lastRefreshTime);
+            return timeSinceLastRefresh > refreshThreshold;
+        }
+
+        function updateLastRefreshTime() {
+            localStorage.setItem('lastDashboardRefresh', new Date().getTime());
+        }
+
+        // Add auto-refresh functionality
+        function setupAutoRefresh() {
+            const refreshInterval = 5 * 60 * 1000; // 5 minutes
+
+            setInterval(() => {
+                console.log("Auto-refreshing dashboard data...");
+                // Get current filter settings
+                const dateRange = document.getElementById('date-range').value;
+                if (dateRange === 'custom') {
+                    const startDate = document.getElementById('start-date').value;
+                    const endDate = document.getElementById('end-date').value;
+                    if (startDate && endDate) {
+                        fetchDashboardData(startDate, endDate);
+                    }
+                } else {
+                    // Use the default date calculation
+                    document.getElementById('apply-filter').click();
+                }
+            }, refreshInterval);
+        }
+
+        // Add export functionality
+        function addExportButtons() {
+            const dashboardCards = document.querySelectorAll('.dashboard-card');
+
+            dashboardCards.forEach(card => {
+                const header = card.querySelector('.card-header');
+                if (header) {
+                    // Create export button
+                    const exportBtn = document.createElement('button');
+                    exportBtn.className = 'btn btn-sm btn-outline-secondary float-end';
+                    exportBtn.innerHTML = '<i class="fas fa-download"></i>';
+                    exportBtn.title = 'Export data';
+
+                    // Add click handler
+                    exportBtn.addEventListener('click', function () {
+                        const chartContainer = card.querySelector('.chart-container');
+                        const canvas = chartContainer.querySelector('canvas');
+                        if (canvas) {
+                            // Handle chart export
+                            exportChartAsImage(canvas, header.textContent.trim());
+                        }
+                    });
+
+                    header.appendChild(exportBtn);
+                }
+            });
+        }
+
+        // Export chart as image
+        function exportChartAsImage(canvas, title) {
+            const link = document.createElement('a');
+            link.download = `${title.replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Add error handling for failed data fetch
+        function handleDataFetchError(error) {
+            console.error("Error fetching data:", error);
+
+            // Show user-friendly error message
+            const errorBanner = document.createElement('div');
+            errorBanner.className = 'alert alert-danger alert-dismissible fade show';
+            errorBanner.role = 'alert';
+            errorBanner.innerHTML = `
+                <strong>Error loading data!</strong> Please check your connection and try again.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+
+            document.querySelector('.container-fluid').prepend(errorBanner);
+
+            // Hide all loading indicators
+            ['weekly', 'monthly', 'age', 'gender'].forEach(chart => hideLoading(chart, false));
+        }
+
+        // Initialize the dashboard on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check for dark mode preference
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+
+            // Set default date range to 30 days
+            document.getElementById('date-range').value = '30';
+
+            // Fetch initial data
+            document.getElementById('apply-filter').click();
+
+            // Set up auto-refresh
+            setupAutoRefresh();
+
+            // Add export buttons
+            addExportButtons();
+
+            // Add FontAwesome icons if not already included
+            if (!document.querySelector('link[href*="fontawesome"]')) {
+                const fontAwesomeLink = document.createElement('link');
+                fontAwesomeLink.rel = 'stylesheet';
+                fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+                document.head.appendChild(fontAwesomeLink);
+            }
+        });
+
+        // Add responsive behavior for mobile devices
+        function setupResponsiveBehavior() {
+            const checkResponsive = () => {
+                if (window.innerWidth < 768) {
+                    // Adjust chart heights for better mobile experience
+                    document.querySelectorAll('.chart-container').forEach(container => {
+                        container.style.height = '200px';
+                    });
+                } else {
+                    // Reset to default heights
+                    const weeklyMonthlyCharts = document.querySelectorAll('.col-xl-8 .chart-container, .col-xl-4 .chart-container');
+                    weeklyMonthlyCharts.forEach(container => {
+                        container.style.height = '300px';
+                    });
+
+                    const demographicCharts = document.querySelectorAll('.col-lg-6 .chart-container');
+                    demographicCharts.forEach(container => {
+                        container.style.height = '250px';
+                    });
+                }
+            };
+
+            // Initial check
+            checkResponsive();
+
+            // Listen for window resize
+            window.addEventListener('resize', checkResponsive);
+        }
+
+        // Set up responsive behavior
+        setupResponsiveBehavior();
+    </script>
+</body>
+
+</html>
