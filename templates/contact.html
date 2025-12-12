@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact | Malaria Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google Font for consistency -->
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      background: linear-gradient(120deg, #eaf6f0 0%, #f5f5f3 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      color: #23413b;
+    }
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1px 20px;
+      background: #2c4c47;
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(44, 76, 71, 0.12);
+      position: sticky;
+      top: 9px;
+      z-index: 1000;
+      height: 70px;
+    }
+    .nav-buttons {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.nav-buttons a {
+  text-decoration: none;
+  padding: 10px 22px;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 30px;
+  background: transparent;
+  border: 2px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-shadow: none;
+}
+
+.nav-buttons a:hover,
+.nav-buttons a:focus,
+.nav-buttons a.active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #fff;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+    .user-icon {
+      height: 36px;
+      border-radius: 50%;
+    }
+    .username {
+      font-weight: bold;
+      color: #fff;
+    }
+    h1 {
+      text-align: center;
+      margin: 48px 0 18px 0;
+      font-size: 2rem;
+      color: #2c4c47;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    main {
+      max-width: 500px;
+      margin: 0 auto 60px auto;
+      padding: 0;
+      background: none;
+      box-shadow: none;
+    }
+    .feedback-card {
+      background: rgba(255,255,255,0.93);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+      padding: 38px 32px 32px 32px;
+      margin: 0 auto;
+      animation: fadeInCenter 0.8s cubic-bezier(.42,0,.58,1) 0.15s forwards;
+      opacity: 0;
+      transform: scale(0.97) translateY(32px);
+      backdrop-filter: blur(7px);
+    }
+    @keyframes fadeInCenter {
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2c4c47;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0 20px 0;
+      border: 1.5px solid #cbe6f1;
+      background-color: #f5f5f3;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #23413b;
+      transition: border 0.2s;
+      font-family: inherit;
+    }
+    input[type="text"]:focus, textarea:focus {
+      border-color: #2c4c47;
+      background: #eaf6f0;
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button[type="submit"] {
+      background: #2c4c47;
+      color: white;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+      margin-top: 10px;
+      box-shadow: 0 4px 20px rgba(15, 144, 201, 0.13);
+    }
+    button[type="submit"]:hover {
+      background: #043506;
+      box-shadow: 0 8px 32px rgba(15, 144, 201, 0.18);
+      transform: translateY(-2px) scale(1.04);
+      color: #fff;
+    }
+    footer {
+      background: #2c4c47;
+      color: #fff;
+      text-align: center;
+      padding: 18px 0;
+      border-radius: 0 0 16px 16px;
+      margin-top: 40px;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 600px) {
+      main {
+        max-width: 99vw;
+        padding: 0 2vw;
+      }
+      .feedback-card {
+        padding: 16px 6px 14px 6px;
+      }
+    }
+    @media (max-width: 900px) {
+  .features-grid, .user-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .feature-card, .user-card {
+    min-width: 0;
+    width: 100%;
+    margin: 0 0 16px 0;
+  }
+  header {
+    flex-direction: column;
+    height: auto;
+    padding: 8px 5px;
+  }
+}
+@media (max-width: 600px) {
+  .nav-buttons {
+    flex-direction: row !important;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  header {
+    padding: 1px 5px;
+    height: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .about-grid {
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .expand-card {
+    max-width: 98vw;
+  }
+}
+
+@media (max-width: 600px) {
+  #upload-form {
+    padding: 12px 4px;
+    max-width: 98vw;
+  }
+  input[type="text"], input[type="password"], input[type="number"] {
+    width: 95%;
+    font-size: 1rem;
+  }
+  .nav-buttons {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <ul>
+          <div class="nav-buttons">
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact" class="active">Contact</a></li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/diary">My Diary</a></li>
+            <li><a href="{{ url_for('admin_analytics') }}">Analytics Dashboard</a></li>
+
+          </div>
+        </ul>
+      </nav>
+      {% if 'username' in session %}
+      <div class="top-bar">
+        <a href="{{ url_for('profile') }}" class="profile-link">
+          <img src="{{ url_for('static', filename='images/user.png') }}" class="user-icon" alt="User Icon">
+          <span class="username">{{ session['username'] }}</span>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <h1>📝 Feedback & Suggestions</h1>
+  <main>
+    <div class="feedback-card">
+      <form method="POST" action="/contact" id="feedback-form">
+        <label for="clinic">Lab/Clinic Name</label>
+        <input type="text" class="form-control" name="clinic" value="{{ hospital_name }}" readonly required>
+        <label for="lab_head">Lab Head Name</label>
+        <input type="text" class="form-control" name="lab_head" required>
+        <label for="message">Feedback Message</label>
+        <textarea class="form-control" name="message" rows="5" required></textarea>
+        <button type="submit" class="btn btn-primary">Send Feedback</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Malaria Detection | MGM Evening College</p>
+  </footer>
+  <script src="{{ url_for('static', filename='js/feedback.js') }}"></script>
+</body>
+</html>
