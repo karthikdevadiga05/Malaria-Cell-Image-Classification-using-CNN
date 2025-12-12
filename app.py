@@ -18,19 +18,26 @@ from utils import generate_gradcam
 
 app = Flask(__name__)
 # Mail configuration (Use your Gmail/SMTP settings)
+# ============================================================================
+# Replace these with your own Gmail credentials for email functionality
+# To get Gmail app password:
+# 1. Go to Google Account > Security > 2-Step Verification
+# 2. Scroll to "App passwords" and generate a new one
+# 3. Use that 16-character password below (not your regular Gmail password)
+
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'malariadetect@gmail.com'     
-app.config['MAIL_PASSWORD'] = 'xhfobpmnpxkohrcl'        
+app.config['MAIL_USERNAME'] = 'your_email@gmail.com'    # TODO: Replace with your Gmail    
+app.config['MAIL_PASSWORD'] = 'your_16_char_app_password'    # TODO: Replace with Gmail App Password        
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.register_blueprint(diary_bp)
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "05NOV@2004"
+ADMIN_PASSWORD = "your_secure_password"    # TODO: Change this to a strong password
 
 mail = Mail(app)
 
-app.secret_key = 'f4e317dec2d14e9fb948a54336c99725'
+app.secret_key = 'your_secret_key_here'   # TODO: Replace with your generated secret key
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 model = load_trained_model()
    
@@ -152,8 +159,8 @@ def send_reply_email(to_email, subject, reply_message):
     # SMTP server settings 
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
-    smtp_username = 'malariadetect@gmail.com'       
-    smtp_password = 'xhfobpmnpxkohrcl'  
+    smtp_username = 'your_email@gmail.com'  # TODO: Must match MAIL_USERNAME       
+    smtp_password = 'your_16_char_app_password'  # TODO: Must match MAIL_PASSWORD  
     from_email = smtp_username
     to_email = to_email
     subject = f"Re: {subject} (Malaria Detection Support)"
@@ -173,8 +180,8 @@ def send_reply_email(to_email, subject, reply_message):
 
 
 def send_email(to_email, subject, message):
-    sender_email = "malariadetect@gmail.com"
-    app_password = "xhfobpmnpxkohrcl"  # 16-digit password from Gmail
+    sender_email = "your_email@gmail.com"  # TODO: Must match MAIL_USERNAME
+    app_password = "your_16_char_app_password"  # TODO: Must match MAIL_PASSWORD
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -205,7 +212,7 @@ def send_feedback_email(clinic_name, lab_head, sender_email, message):
 {message}
     """
 
-    send_email("malariadetect@gmail.com", "New Clinic Feedback Submitted", content)
+    send_email("your_email@gmail.com", "New Clinic Feedback Submitted", content)
 
 from PIL import Image
 import imghdr

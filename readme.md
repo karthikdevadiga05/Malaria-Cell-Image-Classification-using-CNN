@@ -250,7 +250,48 @@ The script will:
 
 If not yet created, these tables can be created using an initialization script or manually from SQLite.
 
+
 ### Configure Email Credentials
+
+Before running the app, you need to configure email settings in `app.py`:
+
+#### 1️⃣ **Gmail Setup (For Email Features)**
+
+Open `app.py` and replace these lines:
+```python
+app.config['MAIL_USERNAME'] = 'your_email@gmail.com'  
+app.config['MAIL_PASSWORD'] = 'your_16_char_app_password'
+```
+
+**To get Gmail App Password:**
+
+1. Go to [Google Account Security](https://myaccount.google.com/security)
+2. Enable **2-Step Verification** (if not already enabled)
+3. Go to **App passwords** → Select **Mail** → Select **Other (Custom name)**
+4. Enter "Malaria Detection App" → Click **Generate**
+5. Copy the **16-character password** (no spaces)
+6. Paste it in `app.config['MAIL_PASSWORD']`
+
+#### 2️⃣ **Admin Credentials**
+
+Update admin login credentials:
+```python
+ADMIN_USERNAME = "admin"  # Change to your preferred admin username
+ADMIN_PASSWORD = "your_secure_password"  # Change to a strong password
+```
+
+#### 3️⃣ **Secret Key (For Session Security)**
+
+Generate a secure secret key:
+```bash
+# Run this in Python terminal:
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Copy the output and replace:
+```python
+app.secret_key = 'paste_generated_key_here'
+```
 
 `app.py` and `utils.py` use Gmail SMTP:
 
