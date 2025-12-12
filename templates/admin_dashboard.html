@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background: linear-gradient(120deg, #eaf6f0 0%, #f5f5f3 100%);
+            min-height: 100vh;
+            margin: 0;
+            color: #23413b;
+        }
+        .header-bar {
+            width: 100vw;
+            background: linear-gradient(90deg, #2c4c47 80%, #5eb89c 100%);
+            color: #fff;
+            padding: 24px 0 20px 0;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 0;
+            box-shadow: 0 2px 10px rgba(44, 76, 71, 0.12);
+        }
+        .dashboard-card {
+            margin: 48px auto 48px auto;
+            background: rgba(255,255,255,0.92);
+            box-shadow: 0 8px 32px rgba(44, 76, 71, 0.13);
+            border-radius: 24px;
+            padding: 42px 44px 36px 44px;
+            max-width: 1100px;
+            width: 97vw;
+            backdrop-filter: blur(7px);
+            position: relative;
+        }
+        @media (max-width: 900px) {
+            .dashboard-card {
+                padding: 24px 6px 18px 6px;
+                max-width: 99vw;
+            }
+        }
+        .dashboard-card h2 {
+            color: #2c4c47;
+            text-align: center;
+            margin-bottom: 28px;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+        .dashboard-card h3 {
+            color: #38876a;
+            text-align: left;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        .back-button {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 24px;
+            padding: 7px 16px;
+            box-shadow: 0 2px 8px rgba(44, 76, 71, 0.10);
+            transition: background 0.2s;
+            z-index: 10;
+        }
+        .back-button a {
+            text-decoration: none;
+            color: #2c4c47;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .back-button:hover {
+            background: #eaf6f0;
+        }
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: #eaf6f0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(44, 76, 71, 0.06);
+            overflow: hidden;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 16px 28px;
+            flex: 1;
+            font-size: 17px;
+            font-weight: 700;
+            transition: 0.3s;
+            border-bottom: 3px solid transparent;
+            color: #2c4c47;
+            letter-spacing: 0.5px;
+        }
+        .tab-button:hover {
+            background-color: #d2f2e3;
+        }
+        .tab-button.active {
+            background-color: white;
+            border-bottom: 3px solid #2c4c47;
+            color: #38876a;
+        }
+        /* Content Sections */
+        .tab-content {
+            display: none;
+            animation: fadeEffect 0.5s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 10px rgba(44, 76, 71, 0.07);
+        }
+        th, td {
+            padding: 14px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: linear-gradient(90deg, #2c4c47 70%, #5eb89c 100%);
+            color: white;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background-color: #eaf6f0;
+        }
+        .delete-btn {
+            background-color: #e63946;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: background-color 0.3s ease;
+        }
+        .delete-btn:hover {
+            background-color: #b71c1c;
+        }
+        .action-cell {
+            text-align: center;
+        }
+        /* Analytics Section */
+        .analytics-cards {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            gap: 18px;
+        }
+        .card {
+            background: linear-gradient(120deg, #eaf6f0 0%, #b2ebc2 100%);
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(44, 76, 71, 0.09);
+            padding: 24px 18px 18px 18px;
+            flex: 1 1 calc(33.333% - 12px);
+            min-width: 220px;
+            max-width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            animation: cardFadeInUp 0.8s cubic-bezier(.42,0,.58,1) forwards;
+        }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.3s; }
+        .card:nth-child(3) { animation-delay: 0.5s; }
+        @keyframes cardFadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .card:hover {
+            background: linear-gradient(120deg, #b2ebc2 0%, #eaf6f0 100%);
+            box-shadow: 0 8px 24px rgba(44, 76, 71, 0.15);
+            transform: translateY(-6px) scale(1.03);
+            transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+        }
+        .card h4 {
+            color: #2c4c47;
+            margin-top: 0;
+            font-size: 1.18rem;
+            transition: color 0.3s;
+        }
+        .card .number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #38876a;
+            margin: 10px 0;
+            transition: color 0.3s;
+        }
+        .card:hover h4,
+        .card:hover .number {
+            color: #1b5e4a;
+        }
+        .card .label {
+            color: #666;
+            font-size: 14px;
+        }
+        textarea {
+            width: 90%;
+            min-height: 34px;
+            border-radius: 6px;
+            border: 1.2px solid #cbe6f1;
+            padding: 8px;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            resize: vertical;
+            background: #f5f5f3;
+        }
+        textarea:focus {
+            border-color: #2c4c47;
+            background: #eaf6f0;
+            outline: none;
+        }
+        button[type="submit"] {
+            background: #2c4c47;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: background 0.2s;
+        }
+        button[type="submit"]:hover {
+            background: #38876a;
+        }
+        @media (max-width: 800px) {
+            .analytics-cards {
+                flex-direction: column;
+                gap: 0;
+            }
+            .card {
+                margin-bottom: 16px;
+            }
+        }
+        @media (max-width: 600px) {
+            .dashboard-card {
+                padding: 14px 2px 10px 2px;
+                margin-top: 16px;
+            }
+            .header-bar {
+                font-size: 1.1rem;
+                padding: 16px 0 12px 0;
+            }
+            .back-button {
+                left: 8px;
+                top: 10px;
+                font-size: 0.95rem;
+                padding: 5px 10px;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+            .tab-button {
+                padding: 12px 8px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">DeepDx</div>
+<div class="dashboard-card">
+    <h2>Admin Dashboard</h2>
+    <div class="back-button">
+        <a href="{{ url_for('landing') }}">&larr; Logout</a>
+    </div>
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'users-tab')">
+            👤 Users
+            {% if new_users_count and new_users_count > 0 %}
+                <span class="notif-badge" id="users-badge">{{ new_users_count }}</span>
+            {% endif %}
+        </button>
+        <button class="tab-button" onclick="openTab(event, 'feedback-tab')">
+            📝 Feedback
+            {% if new_feedback_count and new_feedback_count > 0 %}
+                <span class="notif-badge" id="feedback-badge">{{ new_feedback_count }}</span>
+            {% endif %}
+        </button>
+        <button class="tab-button" onclick="openTab(event, 'analytics-tab')">📊 Analytics</button>
+        <button class="tab-button" onclick="openTab(event, 'contact-tab')">
+            📬 Contact Queries
+            {% if new_contact_count and new_contact_count > 0 %}
+                <span class="notif-badge" id="contact-badge">{{ new_contact_count }}</span>
+            {% endif %}
+        </button>
+    </div>
+    <!-- Users Tab Content -->
+    <div id="users-tab" class="tab-content active">
+        <h3>Registered Users</h3>
+        <div class="search-bar">
+            <input type="text" id="user-search" placeholder="Search by name, email, or hospital..." onkeyup="filterTable('users-table', this.value, [1,2,3])">
+        </div>
+        <table id="users-table">
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Hospital</th>
+                <th>Action</th>
+            </tr>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.hospital }}</td>
+                <td class="action-cell">
+                    <form action="{{ url_for('delete_user', user_id=u.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="delete-btn"
+                            onclick="return confirm('Delete this user?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <!-- Feedback Tab Content -->
+    <div id="feedback-tab" class="tab-content">
+        <h3>User Feedback</h3>
+        <div class="search-bar">
+            <input type="text" id="feedback-search" placeholder="Search by clinic or email..." onkeyup="filterTable('feedback-table', this.value, [0,2])">
+        </div>
+        <table id="feedback-table">
+            <tr>
+                <th>Clinic</th>
+                <th>Lab Head</th>
+                <th>User Email</th>
+                <th>Message</th>
+                <th>Action</th>
+            </tr>
+            {% for f in feedbacks %}
+            <tr>
+                <td>{{ f[0] }}</td>
+                <td>{{ f[1] }}</td>
+                <td>{{ f[2] }}</td>
+                <td>{{ f[3] }}</td>
+                <td class="action-cell">
+                    <form action="{{ url_for('delete_feedback') }}" method="POST">
+                        <input type="hidden" name="email" value="{{ f[2] }}">
+                        <input type="hidden" name="message" value="{{ f[3] }}">
+                        <button type="submit" class="delete-btn"
+                            onclick="return confirm('Delete this feedback?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <!-- Analytics Tab Content -->
+    <div id="analytics-tab" class="tab-content">
+        <h3>Dashboard Analytics</h3>
+        <div class="analytics-cards">
+            <div class="card">
+                <h4>Total Users</h4>
+                <div class="number">{{ users|length }}</div>
+                <div class="label">Registered accounts</div>
+            </div>
+            <div class="card">
+                <h4>Feedback Count</h4>
+                <div class="number">{{ feedbacks|length }}</div>
+                <div class="label">User submissions</div>
+            </div>
+            <div class="card">
+                <h4>Total Images Detected</h4>
+                <div class="number">{{ total_images }}</div>
+                <div class="label">All time</div>
+            </div>
+        </div>
+    </div>
+    <!-- Contact Tab Content -->
+    <div id="contact-tab" class="tab-content">
+        <h3>Contact Messages</h3>
+        <div class="search-bar">
+            <input type="text" id="contact-search" placeholder="Search by email or date/time..." onkeyup="filterTable('contact-table', this.value, [1,4])">
+        </div>
+        <table id="contact-table">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Message</th>
+                <th>Reply</th>
+                <th>Received At</th>
+            </tr>
+            {% for msg in contact_messages %}
+            <tr>
+                <td>{{ msg['name'] }}</td>
+                <td>{{ msg['email'] }}</td>
+                <td>{{ msg['message'] }}</td>
+                <td>
+                    {% if msg['reply'] %}
+                        <div>{{ msg['reply'] }}<br><small>{{ msg['replied_at'] }}</small></div>
+                    {% else %}
+                        <form method="post" action="{{ url_for('admin_reply_contact') }}">
+                            <input type="hidden" name="msg_id" value="{{ msg['id'] }}">
+                            <textarea name="reply" required placeholder="Type reply here"></textarea>
+                            <button type="submit">Send Reply</button>
+                        </form>
+                    {% endif %}
+                </td>
+                <td>{{ msg['created_at'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<!-- Styles for search bar and notification badge -->
+<style>
+.search-bar {
+    margin: 12px 0 18px 0;
+    text-align: right;
+}
+.search-bar input[type="text"] {
+    font-size: 1rem;
+    padding: 8px 14px;
+    border: 1.5px solid #38876a;
+    border-radius: 7px;
+    background: #f3faf7;
+    color: #23413b;
+    width: 260px;
+    transition: border 0.2s;
+}
+.search-bar input[type="text"]:focus {
+    border-color: #2c4c47;
+    outline: none;
+    background: #eaf6f0;
+}
+
+.notif-badge {
+    background: #2c4c47;
+    color: #fff;
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 0.92rem;
+    font-weight: bold;
+    margin-left: 6px;
+    vertical-align: middle;
+    animation: badge-pop 0.7s cubic-bezier(.42,0,.58,1);
+}
+@keyframes badge-pop {
+    0% { transform: scale(0.3); opacity: 0.2;}
+    60% { transform: scale(1.25); opacity: 1;}
+    100% { transform: scale(1); }
+}
+</style>
+
+<!-- JavaScript for tabs, search filters, and badge hiding -->
+<script>
+    // Tab functionality
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+
+        // Hide notification badge for the opened tab
+        if(tabName === 'users-tab' && document.getElementById('users-badge')) {
+            document.getElementById('users-badge').style.display = 'none';
+        }
+        if(tabName === 'feedback-tab' && document.getElementById('feedback-badge')) {
+            document.getElementById('feedback-badge').style.display = 'none';
+        }
+        if(tabName === 'contact-tab' && document.getElementById('contact-badge')) {
+            document.getElementById('contact-badge').style.display = 'none';
+        }
+    }
+
+    // Generic table filter function
+    function filterTable(tableId, searchValue, columns) {
+        var input, filter, table, tr, td, i, j, txtValue, show;
+        filter = searchValue.toUpperCase();
+        table = document.getElementById(tableId);
+        tr = table.getElementsByTagName("tr");
+        for (i = 1; i < tr.length; i++) { // skip header row
+            show = false;
+            for (j = 0; j < columns.length; j++) {
+                td = tr[i].getElementsByTagName("td")[columns[j]];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        show = true;
+                        break;
+                    }
+                }
+            }
+            tr[i].style.display = show ? "" : "none";
+        }
+    }
+</script>
+
+    <!-- JavaScript -->
+    <script>
+        // Tab functionality
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            // Hide all tab content
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            // Remove active class from all tab buttons
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            // Show the specific tab content and add active class to the button
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>
